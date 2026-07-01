@@ -1,5 +1,3 @@
-# src/app/routers/tickets.py
-
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -11,10 +9,10 @@ from ..models import Ticket
 from ..schemas import TicketCreate, TicketDetail, TicketRead, TicketUpdate
 
 
-router = APIRouter(prefix="/tickets", tags=["tickets"])
+tickets_router = APIRouter(prefix="/tickets", tags=["tickets"])
 
 
-@router.get("", response_model=list[TicketRead])
+@tickets_router.get("", response_model=list[TicketRead])
 async def list_tickets(
     db: Annotated[AsyncSession, Depends(get_db)],
     status: str | None = None,
@@ -38,7 +36,7 @@ async def list_tickets(
     return tickets
 
 
-@router.get("/search", response_model=list[TicketRead])
+@tickets_router.get("/search", response_model=list[TicketRead])
 async def search_tickets(
     db: Annotated[AsyncSession, Depends(get_db)],
     q: str = Query(min_length=1),
@@ -51,7 +49,7 @@ async def search_tickets(
     return tickets
 
 
-@router.get("/{ticket_id}", response_model=TicketDetail)
+@tickets_router.get("/{ticket_id}", response_model=TicketDetail)
 async def get_ticket(
     ticket_id: int,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -64,7 +62,7 @@ async def get_ticket(
     return ticket
 
 
-@router.post("", response_model=TicketDetail, status_code=201)
+@tickets_router.post("", response_model=TicketDetail, status_code=201)
 async def create_ticket(
     ticket_data: TicketCreate,
     db: Annotated[AsyncSession, Depends(get_db)],
@@ -84,7 +82,7 @@ async def create_ticket(
     return ticket
 
 
-@router.patch("/{ticket_id}", response_model=TicketDetail)
+@tickets_router.patch("/{ticket_id}", response_model=TicketDetail)
 async def update_ticket(
     ticket_id: int,
     ticket_data: TicketUpdate,
