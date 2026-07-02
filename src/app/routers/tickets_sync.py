@@ -7,10 +7,10 @@ from ..database import get_db
 from ..services.dummyjson import sync_tickets_from_dummyjson
 
 
-sync_router = APIRouter(prefix="/sync", tags=["sync"])
+router = APIRouter(prefix="/sync", tags=["sync"])
 
 
-@sync_router.post("/tickets")
+@router.post("/tickets")
 async def sync_tickets(
     db: Annotated[AsyncSession, Depends(get_db)],
 ):
