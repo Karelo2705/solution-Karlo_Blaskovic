@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..models import Ticket
 
 
-DUMMYJSON_TODOS_URL = "https://dummyjson.com/todos"
-DUMMYJSON_USERS_URL = "https://dummyjson.com/users"
+DUMMYJSON_TODOS_URL = "https://dummyjson.com/todos?limit=0"
+DUMMYJSON_USERS_URL = "https://dummyjson.com/users?limit=0"
 
 
 def calculate_priority(ticket_id: int) -> str:
@@ -57,15 +57,35 @@ async def sync_tickets_from_dummyjson(db: AsyncSession) -> dict[str, int]:
     todos, users_by_id = await fetch_dummyjson_data()
 
     created_count = 0
+    updated_count = 0
     skipped_count = 0
+    missing_assignee_count = 0
 
     for todo in todos:
         ticket_id = todo["id"]
+        assignee = users_by_id.get(todo["userId"])
+
+        if assignee is None:
+            missing_assignee_count += 1
 
         existing_ticket = await db.get(Ticket, ticket_id)
 
         if existing_ticket is not None:
-            skipped_count += 1
+            changed = False
+
+            if existing_ticket.assignee is None and assignee is not None:
+                existing_ticket.assignee = assignee
+                changed = True
+
+            if existing_ticket.source_json is None:
+                existing_ticket.source_json = todo
+                changed = True
+
+            if changed:
+                updated_count += 1
+            else:
+                skipped_count += 1
+
             continue
 
         ticket = Ticket(
@@ -73,7 +93,7 @@ async def sync_tickets_from_dummyjson(db: AsyncSession) -> dict[str, int]:
             title=todo["todo"],
             status=calculate_status(todo["completed"]),
             priority=calculate_priority(ticket_id),
-            assignee=users_by_id.get(todo["userId"]),
+            assignee=assignee,
             source_json=todo,
         )
 
@@ -84,6 +104,8 @@ async def sync_tickets_from_dummyjson(db: AsyncSession) -> dict[str, int]:
 
     return {
         "created": created_count,
+        "updated": updated_count,
         "skipped": skipped_count,
+        "missing_assignee": missing_assignee_count,
         "total_from_source": len(todos),
     }

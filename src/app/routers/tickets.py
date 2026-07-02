@@ -17,8 +17,6 @@ async def list_tickets(
     db: Annotated[AsyncSession, Depends(get_db)],
     status: str | None = None,
     priority: str | None = None,
-    limit: int = Query(default=10, ge=1, le=100),
-    offset: int = Query(default=0, ge=0),
 ):
     query = select(Ticket)
 
@@ -28,7 +26,7 @@ async def list_tickets(
     if priority is not None:
         query = query.where(Ticket.priority == priority)
 
-    query = query.order_by(Ticket.id).limit(limit).offset(offset)
+    query = query.order_by(Ticket.id)
 
     result = await db.execute(query)
     tickets = result.scalars().all()
