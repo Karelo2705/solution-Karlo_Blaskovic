@@ -1,0 +1,14 @@
+services:
+  api:
+    build: .
+    container_name: tickethub-api
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: sqlite+aiosqlite:////data/tickethub.db
+    volumes:
+      - tickethub_data:/data
+    restart: unless-stopped
+
+volumes:
+  tickethub_data:

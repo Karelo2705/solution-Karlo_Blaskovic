@@ -1,3 +1,5 @@
+import os
+
 from collections.abc import AsyncGenerator
 
 from sqlalchemy.ext.asyncio import (
@@ -8,7 +10,10 @@ from sqlalchemy.ext.asyncio import (
 from sqlalchemy.orm import DeclarativeBase
 
 
-DATABASE_URL = "sqlite+aiosqlite:///./tickethub.db"
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "sqlite+aiosqlite:///./tickethub.db",
+)
 
 
 class Base(DeclarativeBase):
