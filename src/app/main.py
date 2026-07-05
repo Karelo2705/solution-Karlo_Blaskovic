@@ -4,7 +4,7 @@ from contextlib import asynccontextmanager, suppress
 
 from fastapi import FastAPI
 
-from .database import AsyncSessionLocal, create_db_and_tables
+from .database import AsyncSessionLocal
 from .routers.tickets_read import router as tickets_read_router
 from .routers.tickets_write import router as tickets_write_router
 from .routers.tickets_sync import router as tickets_sync_router
@@ -23,7 +23,6 @@ SYNC_INTERVAL_SECONDS = 30
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await create_db_and_tables()
 
     await run_dummyjson_sync_once(
         session_factory = AsyncSessionLocal,
